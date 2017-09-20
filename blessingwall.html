@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: url("images/bg.gif");
+            font: 12px "simsun";
+            user-select: none;
+        }
+        .content {
+            width: 960px;
+            height: 627px;
+            margin: 0 auto;
+            background: url("images/content_bg.jpg");
+            position: relative;
+        }
+        .clearfix {
+            *zoom: 1;
+        }
+        .clearfix:before,.clearfix:after{
+            content: '';
+            display: table;
+        }
+        .clearfix:after{
+            clear: both;
+        }
+        .tip {
+            display: none;
+            width: 227px;
+            position: absolute;
+            cursor: move;
+        }
+        .tip-h {
+            padding-top: 50px;
+            background: url("images/tip1_h.gif") no-repeat;
+            cursor: default;
+            cursor: move;
+        }
+        .text {
+            float: left;
+            padding-left: 10px;
+        }
+        .close {
+            float: right;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .tip-m {
+            min-height: 40px;
+            padding: 0 10px;
+            padding-top: 10px;
+            background: url("images/tip1_c.gif");
+            overflow:hidden;
+            cursor: move;
+        }
+        .tip-f {
+            height: 53px;
+            background: url("images/tip1_f.gif");
+            padding-top: 20px;
+            cursor: move;
+        }
+        .icon {
+            float: left;
+            padding-left: 10px;
+        }
+        .name {
+            overflow: hidden;
+            float: right;
+            margin-right: 10px;
+            width: 80px;
+            text-align: right;
+        }
+
+        button {
+            position: absolute;
+            height: 40px;
+            width: 120px;
+            top: 100px;
+            left: -170px;
+            cursor: pointer;
+        }
+        /*阴影*/
+        .cover{
+            display: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            z-index: 999;
+            background-color: rgba(100,100,100,0.5);
+        }
+        /*输入表单*/
+        form{
+            width: 260px;
+            height: 300px;
+            background-color: skyblue;
+            position: relative;
+            border: 3px solid #000000;
+            padding: 20px 10px;
+            margin: 10% auto 0 auto;
+            font: 700 18px/36px "Microsoft Yahei";
+            text-align: center;
+        }
+        form textarea,form input[type="text"]{
+            font: 14px/24px "microsoft yahei";
+        }
+        form textarea{
+            resize: none;
+        }
+        #formSubmit{
+            width: 70px;
+            height: 30px;
+            font: 700 14px/36px "Microsoft Yahei";
+        }
+        #close2{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        /*输入提示框*/
+        .required {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+    <!--遮盖幕布和表单-->
+    <div class="cover" id="cover">
+        <form action="">
+            <div class="close" id="close2" title=" 关闭纸条">x</div>
+            <label for="formContent">请输入你的祝福语</label><br/>
+            <textarea id="formContent" cols="30" rows="7"></textarea><br/>
+            <label for="formName">昵称：</label><input type="text" id="formName"/><br/>
+            <input type="button" id="formSubmit" value="提交"/>
+        </form>
+    </div>
+    <!-- 主要内容区-->
+    <div class="content" id="content">
+        <button>点击添加小纸条</button>
+        <div class="tip" id="tip" title="按住鼠标拖动">
+            <div class="tip-h clearfix">
+                <div class="text" id="tipTime"> </div>
+                <div class="close" id="close1" title="关闭纸条">x</div>
+            </div>
+            <div class="tip-m" id="tipContent"> </div>
+            <div class="tip-f clearfix">
+                <div class="icon">
+                    <img src="images/bpic_1.gif" alt=""/>
+                </div>
+                <div class="name" id="tipName"> </div>
+            </div>
+        </div>
+    </div>
+    <script src="common.js"></script>
+    <script>
+        //获得一些元素对象
+        var tip = id("tip"), content = id("content"), formContent = id("formContent"), formName = id("formName"), formSubmit = id("formSubmit"), tipTime = id("tipTime"), tipContent = id("tipContent"), tipName = id("tipName"), closer2 = id("close2"), cover = id("cover"), required = id("required");
+
+        //声明一些用于储存的变量
+        var text, username, date, i = 0, children = [], closers =[];
+
+        //幕布点击关闭
+        closer2.onclick = function(){
+            cover.style.display = "none";
+            formContent.value = "";
+            formName.value = "";
+            formContent.placeholder = "";
+            formName.placeholder = "";
+        };
+
+        //获得button
+        var button = document.getElementsByTagName("button")[0];
+        button.onclick = function(){
+            cover.style.display = "block";
+            formContent.focus();
+        }
+
+        //表单被提交
+        formSubmit.onclick = function(){
+            //表单内容为空的提醒
+            if(formContent.value === ""){
+                formContent.placeholder = "内容不能为空";
+                return;
+            }
+            if(formName.value === ""){
+                formName.placeholder = "内容不能为空";
+                return;
+            }
+
+            //表单内容的传递与表单重置
+            date = new Date();
+            text =  formContent.value;
+            username = formName.value;
+            i++;
+            formContent.value = "";
+            formName.value = "";
+            children[i] = createTip();
+            content.appendChild(children[i]);
+
+            //小贴纸移动
+            children[i].onmousedown = function(){
+                this.style.zIndex = 2;
+                var x = getMousePos(onmousemove)[0];
+                var y = getMousePos(onmousemove)[1];
+                var xSkewing = parseInt(this.style.left) - x;
+                var ySkewing = parseInt(this.style.top) - y;
+                this.onmousemove = function(){
+                    var x = getMousePos(onmousemove)[0] + xSkewing;
+                    var y = getMousePos(onmousemove)[1] + ySkewing;
+                    if(x<0){
+                        x = 0;
+                    }else if(x>735){
+                        x = 735;
+                    }
+                    if(y<0){
+                        y = 0;
+                    }else if(y>480){
+                        y = 480;
+                    }
+                    this.style.left = x  + "px";
+                    this.style.top = y + "px";
+                }
+            }
+            children[i].onmouseup = function(){
+                this.onmousemove = function(){
+                    this.style.zIndex = 1;
+                }
+            }
+
+            //关闭表单
+            cover.style.display = "none";
+            closers[i] = children[i].getElementsByClassName("close")[0];
+            closers[i].index = i;
+            closers[i].onclick = function(){
+                close(children[this.index]);
+            }
+        }
+
+        //表单输入框提示内容点击清空
+        formContent.onclick = function(){
+            formContent.placeholder = "";
+        }
+        formName.onclick = function(){
+            formName.placeholder = "";
+        }
+
+        //创建小贴纸函数
+        function createTip(){
+            tipTime.firstChild.nodeValue = "第"+i+"条 "+date.toLocaleString();
+            tipContent.firstChild.nodeValue = text;
+            tipName.firstChild.nodeValue = username;
+            var newTip = tip.cloneNode(true);
+            var x = Math.floor(Math.random()*731);
+            var y = Math.floor(Math.random()*440);
+            newTip.style.top = y +"px";
+            newTip.style.left = x + "px";
+            newTip.style.display = "block";
+            newTip.style.zIndex = 1;
+            return newTip;
+        }
+
+        //关闭按钮的函数
+        function close(box){
+            box.style.display = "none";
+        }
+
+        //获取鼠标位置函数（从网上找来的函数，不是本人所写）
+        function getMousePos(event){
+            var e = event || window.event;
+            var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
+            var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+            var x = e.pageX || e.clientX + scrollX;
+            var y = e.pageY || e.clientY + scrollY;
+            return [x,y];
+        }
+    </script>
+</body>
+</html>
